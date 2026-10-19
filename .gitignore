@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Databases & local user history
+*.db
+*.sqlite
+*.sqlite3
+chess_trainer.db
+
+# Stockfish binaries and engine artifacts
+engine/
+*.exe
+*.zip
+*.tar.gz
+
+# Environment & personal settings
+.env
+.vscode/
+.idea/
+*.log
+.DS_Store

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chess Mistake Academy — Personalized Tactical Trainer</title>
+  <link rel="stylesheet" href="/static/css/chessboard-1.0.0.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♟️</text></svg>">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="brand">
+      <span class="brand-icon">♟️</span>
+      <div>
+        <div class="brand-title">Chess Mistake Academy</div>
+      </div>
+      <span class="brand-tag">AI Coach</span>
+    </div>
+
+    <div class="header-stats">
+      <div class="user-badge" style="display: flex; align-items: center; gap: 8px;">
+        <span>👤</span>
+        <input type="text" id="username-input" placeholder="Chess.com Username" value="" style="background: transparent; border: none; color: #f1f5f9; font-weight: 600; font-size: 13px; outline: none; width: 150px;" title="Enter your Chess.com username and click Sync">
+      </div>
+
+      <div class="stat-pill" title="Total games fetched from your Chess.com archives">
+        <span>Games:</span>
+        <span class="num" id="stat-total-games">0</span>
+      </div>
+
+      <div class="stat-pill" title="Total blunder & mistake positions extracted">
+        <span>Mistakes Extracted:</span>
+        <span class="num" id="stat-total-mistakes">0</span>
+      </div>
+
+      <div class="stat-pill" title="Mistakes you have successfully solved">
+        <span>Mastered:</span>
+        <span class="num" id="stat-solved" style="color: #10b981;">0</span>
+      </div>
+
+      <button class="sync-btn" id="btn-sync" title="Download newest games from Chess.com and analyze them with Stockfish">
+        <span>🔄</span>
+        <span>Sync Chess.com Games</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Body Layout -->
+  <div class="app-container">
+
+    <!-- Left Sidebar: Mistake Catalog & Filter Controls -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h3 style="font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px;">Your Mistake Lessons</h3>
+        <p style="font-size: 12px; color: #94a3b8;">Custom positions curated from your actual matches.</p>
+
+        <div class="filter-row">
+          <select id="filter-theme" class="filter-select">
+            <option value="all">All Tactical Themes</option>
+            <option value="endgame_blunder">Endgame Blunders</option>
+            <option value="tactical_blunder">Tactical Blunders</option>
+            <option value="opening_trap">Opening Inaccuracies</option>
+            <option value="hanging_piece">Hanging Pieces</option>
+            <option value="missed_capture">Missed Captures</option>
+            <option value="missed_fork">Missed Forks</option>
+            <option value="blundered_mate">Blundered Mates</option>
+          </select>
+
+          <select id="filter-category" class="filter-select">
+            <option value="all">All Severities</option>
+            <option value="blunder">Blunders (-3.0+)</option>
+            <option value="missed_win">Missed Wins</option>
+            <option value="mistake">Mistakes</option>
+          </select>
+        </div>
+
+        <div class="filter-row" style="margin-top: 6px;">
+          <select id="filter-time" class="filter-select">
+            <option value="all">All Time Controls</option>
+            <option value="rapid">Rapid</option>
+            <option value="blitz">Blitz</option>
+            <option value="bullet">Bullet</option>
+          </select>
+        </div>
+
+        <div class="filter-tabs">
+          <div class="tab-btn active" data-tab="all">All</div>
+          <div class="tab-btn" data-tab="unsolved">To Retry</div>
+          <div class="tab-btn" data-tab="solved">Mastered</div>
+        </div>
+      </div>
+
+      <!-- Scrollable list of mistake cards -->
+      <div class="mistake-list" id="mistake-list">
+        <!-- Dynamically populated by app.js -->
+      </div>
+    </aside>
+
+    <!-- Center Board Area -->
+    <main class="board-area">
+      <div class="board-container-wrapper">
+        <!-- Live Centipawn Evaluation Bar -->
+        <div class="eval-bar-wrapper" title="Stockfish Centipawn Evaluation">
+          <div class="eval-bar-fill" id="eval-fill"></div>
+        </div>
+
+        <!-- The Interactive Chess Board -->
+        <div id="chess-board"></div>
+      </div>
+
+      <!-- Dynamic Feedback Banner -->
+      <div class="board-status-banner status-prompt" id="status-banner">
+        Loading lessons from your games...
+      </div>
+    </main>
+
+    <!-- Right Sidebar: Coach Desk & Interactive Drills -->
+    <aside class="coach-panel">
+      <!-- Game Context Card -->
+      <div class="card">
+        <div class="card-title">
+          <span>⚔️</span> Match Context
+        </div>
+        <div class="game-meta-row">
+          <span class="label">Opponent:</span>
+          <span class="val" id="meta-opponent">—</span>
+        </div>
+        <div class="game-meta-row">
+          <span class="label">Opponent Rating:</span>
+          <span class="val" id="meta-rating">—</span>
+        </div>
+        <div class="game-meta-row">
+          <span class="label">Format:</span>
+          <span class="val" id="meta-time-class">—</span>
+        </div>
+        <div class="game-meta-row">
+          <span class="label">Position:</span>
+          <span class="val" id="meta-move-num">—</span>
+        </div>
+        <div class="game-meta-row">
+          <span class="label">Mistake Type:</span>
+          <span class="val" id="meta-theme" style="color: #f59e0b;">—</span>
+        </div>
+        <div class="game-meta-row">
+          <span class="label">Evaluation Loss:</span>
+          <span class="val" id="meta-eval-drop" style="color: #ef4444;">—</span>
+        </div>
+
+        <!-- What happened vs Solution -->
+        <div class="blunder-compare">
+          <div class="compare-box blunder">
+            <div class="lbl">What You Played</div>
+            <div class="move-text" id="blunder-move-val">—</div>
+          </div>
+          <div class="compare-box solution">
+            <div class="lbl">Winning Move</div>
+            <div class="move-text" id="solution-move-val">???</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coach Notes & Explanation -->
+      <div class="card">
+        <div class="card-title">
+          <span>💡</span> Tactical Lesson
+        </div>
+        <div class="coach-notes-text" id="coach-notes">
+          Select a lesson on the left to review your move.
+        </div>
+      </div>
+
+      <!-- Interactive Controls -->
+      <div class="coach-actions">
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="btn-hint" title="Highlight the piece you should move">
+            <span>💡</span> Hint
+          </button>
+          <button class="btn btn-secondary" id="btn-solution" title="Show the engine's best move">
+            <span>👁️</span> Show Move
+          </button>
+          <button class="btn btn-secondary" id="btn-retry" title="Reset board to mistake position">
+            <span>🔄</span> Reset
+          </button>
+        </div>
+
+        <button class="btn btn-spar" id="btn-spar" title="Play out this position against Stockfish to practice converting a win">
+          <span>⚔️</span> Play vs Stockfish
+        </button>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="btn-flip" title="Flip the board view">
+            <span>↕️</span> Flip Board
+          </button>
+          <button class="btn btn-primary" id="btn-next" title="Go to the next lesson">
+            <span>Next Lesson ➔</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/js/jquery.min.js"></script>
+  <script src="/static/js/chess.min.js"></script>
+  <script src="/static/js/chessboard-1.0.0.min.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
